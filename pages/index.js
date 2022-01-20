@@ -1,10 +1,35 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Head from 'next/head'
 import styles from '../styles/Home.module.scss'
 
 export default function Home() {
   const [imageSrc, setImageSrc] = useState();
   const [uploadData, setUploadData] = useState();
+
+  const [tags, setTags] = useState();
+
+  useEffect(() => {
+    (async function run() {
+      const data = await fetch('/api/tags').then(r => r.json());
+      setTags(data.tags);
+    })()
+  }, []);
+
+  const [activeTag, setActiveTag] = useState();
+  const [images, setImages] = useState();
+
+  useEffect(() => {
+    (async function run() {
+      if ( !activeTag ) return;
+      const data = await fetch('/api/images', {
+        method: 'POST',
+        body: JSON.stringify({
+          tag: activeTag
+        })
+      }).then(r => r.json());
+      setImages(data.resources);
+    })()
+  }, [activeTag]);
 
   /**
    * handleOnChange
@@ -52,6 +77,50 @@ export default function Home() {
         <h1 className={styles.title}>
           Image Uploader
         </h1>
+
+
+        {Array.isArray(tags) && (
+          <ul style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            listStyle: 'none',
+            padding: 0,
+            margin: 0
+          }}>
+            { tags.map(tag => {
+              return (
+                <li key={tag} style={{ margin: '.5em' }}>
+                  <button onClick={() => setActiveTag(tag)} style={{
+                    color: 'white',
+                    backgroundColor: tag === activeTag ? 'blue' : 'blueviolet'
+                  }}>
+                    { tag }
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        )}
+
+        {Array.isArray(images) && (
+          <ul style={{
+            display: 'grid',
+            gridGap: '1em',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+            listStyle: 'none',
+            padding: 0,
+            margin: 0
+          }}>
+            { images.map(image => {
+              return (
+                <li key={image.asset_id} style={{ margin: '1em' }}>
+                  <img src={image.secure_url} width={image.width} height={image.height} alt="" />
+                </li>
+              )
+            })}
+          </ul>
+        )}
 
         <p className={styles.description}>
           Upload your image to Cloudinary!
