@@ -8,6 +8,9 @@ cloudinary.config({
 
 export default async function handler(req, res) {
   const { image } = JSON.parse(req.body);
-  const results = await cloudinary.uploader.upload(image);
+  const results = await cloudinary.uploader.upload(image, {
+    categorization: 'google_tagging',
+    auto_tagging: .6
+  });
   res.status(200).json(results);
 }
