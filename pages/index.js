@@ -33,7 +33,7 @@ export default function Home() {
     const data = await fetch('/api/upload', {
       method: 'POST',
       body: JSON.stringify({
-        test: true
+        image: imageSrc
       })
     }).then(r => r.json());
 
